@@ -41,16 +41,23 @@ class DepthMapEstimator:
             self.input_tensor = self.graph.get_tensor_by_name("0:0")
             self.output_tensor = self.graph.get_tensor_by_name(model_operations[-1].name + ":0")
 
-        self.sess = tf.compat.v1.Session(graph=self.graph)
-
-        # Fail fast on CPU for NCHW models
-        try:
-            self.predict(np.zeros((self.net_h, self.net_w, 3), dtype=np.float32))
-        except tf.errors.UnimplementedError as e:
+        gpus = tf.config.list_physical_devices("GPU")
+        if not gpus:
             raise RuntimeError(
-                "This MiDaS model uses NCHW and cannot run on TensorFlow CPU. "
-                "Use a GPU backend or a CPU-compatible NHWC model."
-            ) from e
+                "No GPU detected by TensorFlow. On Mac, install tensorflow-metal "
+                "and use an Apple Silicon GPU."
+            )
+
+        for gpu in gpus:
+            try:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            except Exception:
+                pass
+
+        config = tf.compat.v1.ConfigProto()
+        config.gpu_options.allow_growth = True
+        config.allow_soft_placement = True
+        self.sess = tf.compat.v1.Session(graph=self.graph, config=config)
 
         resize_image = Resize(
             self.net_w,
@@ -67,9 +74,17 @@ class DepthMapEstimator:
 
         self.transform = compose2(resize_image, PrepareForNet())
 
+        # Fail fast on CPU for NCHW models
+        try:
+            self.predict(np.zeros((self.net_h, self.net_w, 3), dtype=np.float32))
+        except tf.errors.UnimplementedError as e:
+            raise RuntimeError(
+                "This MiDaS model uses NCHW and cannot run on TensorFlow CPU. "
+                "Use a GPU backend or a CPU-compatible NHWC model."
+            ) from e
+
     def predict(self, rgb_frame):
         img_input = self.transform({"image": rgb_frame})["image"]
-        # Use tensor name as dict key to avoid unhashable Tensor objects
         feed_dict = {self.input_tensor.name: [img_input]}
         prediction = self.sess.run(self.output_tensor, feed_dict)
         prediction = prediction.reshape(self.net_h, self.net_w)

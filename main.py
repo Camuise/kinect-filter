@@ -18,6 +18,11 @@ def resize_frame(frame):
 
     return resized
 
+def process_frame(frame):
+    frame = resize_frame(frame)
+    
+    return frame
+
 def main():
     # start webcam, then open a window to display the video feed
     cap: cv.VideoCapture = cv.VideoCapture(0)
@@ -26,23 +31,18 @@ def main():
         return
     
     while True:
-        # read a frame from the webcam
+        # show processed webcam feed in a window
         ret, frame = cap.read()
         if not ret:
             print("Error: Could not read frame.")
             break
-        
-        # resize the frame
-        frame = resize_frame(frame)
-
-        # display the frame in a window
+        frame = process_frame(frame)
         cv.imshow('Webcam Feed', frame)
         
         # wait for 1 ms and check if 'q' key is pressed to exit
         if cv.waitKey(1) & 0xFF == ord('q'):
             break
-        
-    # release the webcam and close the window
+
     cap.release()
     cv.destroyAllWindows()
 

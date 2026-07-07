@@ -1,5 +1,4 @@
 import cv2 as cv
-import tensorflow as tf
 from midas.run import create_depth_map as midas_create_depth_map
 
 # constants
@@ -29,8 +28,8 @@ def create_depth_map(frame):
     depth_map = cv.normalize(depth_map, depth_map, 0, 255, cv.NORM_MINMAX, cv.CV_8U)
     depth_map = cv.cvtColor(depth_map, cv.COLOR_GRAY2BGR)
     
-    # now colorize the depth map using a colormap
-    depth_map = cv.applyColorMap(depth_map, cv.COLORMAP_JET)
+    # # now colorize the depth map using a colormap
+    # depth_map = cv.applyColorMap(depth_map, cv.COLORMAP_JET)
     
     return depth_map
 

@@ -52,7 +52,7 @@ def main():
             print("Error: Could not read frame.")
             break
         frame = process_frame(frame)
-        cv.imshow('Webcam Feed', frame)
+        cv.imshow('Kinect Filter', frame)
         
         # wait for 1 ms and check if 'q' key is pressed to exit
         if cv.waitKey(1) & 0xFF == ord('q'):

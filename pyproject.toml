@@ -4,4 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "tensorflow-macos>=2.16.2",
+    "tensorflow-metal>=1.2.0",
+]

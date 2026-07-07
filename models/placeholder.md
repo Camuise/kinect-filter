@@ -1,0 +1,1 @@
+Download models from [this repo](https://github.com/isl-org/MiDaS/blob/master/tf/README.md) and place them here.

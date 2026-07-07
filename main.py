@@ -1,4 +1,6 @@
 import cv2 as cv
+import tensorflow as tf
+from midas.run import create_depth_map as midas_create_depth_map
 
 # constants
 KINECT_WIDTH = 640
@@ -18,10 +20,24 @@ def resize_frame(frame):
 
     return resized
 
+def create_depth_map(frame):
+    # first get a depth map using MiDaS
+    rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+    depth_map = midas_create_depth_map(rgb_frame)
+    
+    # then turn depth map into a grayscale image
+    depth_map = cv.normalize(depth_map, depth_map, 0, 255, cv.NORM_MINMAX, cv.CV_8U)
+    depth_map = cv.cvtColor(depth_map, cv.COLOR_GRAY2BGR)
+    
+    # now colorize the depth map using a colormap
+    depth_map = cv.applyColorMap(depth_map, cv.COLORMAP_JET)
+    
+    return depth_map
+
 def process_frame(frame):
     frame = resize_frame(frame)
-    
-    return frame
+    depth_map = create_depth_map(frame)
+    return depth_map
 
 def main():
     # start webcam, then open a window to display the video feed
